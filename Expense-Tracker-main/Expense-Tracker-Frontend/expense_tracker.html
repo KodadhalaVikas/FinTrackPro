@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrackPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <div class="top-bar">
+            <h1>FinTrackPro</h1>
+            <div class="top-bar-actions">
+                <button class="mode-toggle-btn" id="darkModeToggle">🌙</button>
+                <button class="logout-button" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+
+        <!-- PHASE 6: Profile & UI -->
+        <div class="card-section">
+            <h3>Profile</h3>
+            <div class="profile-row">
+                <img id="avatarPreview" class="avatar-preview" src="https://api.dicebear.com/7.x/initials/svg?seed=User" alt="Avatar">
+                <div class="profile-fields">
+                    <label for="avatarUrlInput">Profile photo URL</label>
+                    <input type="text" id="avatarUrlInput" placeholder="Paste an image URL">
+                    <label for="avatarFileInput">Or choose a photo from your device</label>
+                    <input type="file" id="avatarFileInput" accept="image/*">
+                    <label for="currencySelect">Currency</label>
+                    <select id="currencySelect">
+                        <option value="USD">USD ($)</option>
+                        <option value="INR">INR (₹)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                    </select>
+                    <button class="btn" id="saveProfileBtn">Save Profile</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="balance">
+            <h2>Your Balance</h2>
+            <p id="balance">$0.00</p>
+        </div>
+        <div class="income-expense">
+            <div>
+                <h3>Income</h3>
+                <p id="income">$0.00</p>
+            </div>
+            <div class="expense">
+                <h3>Expenses</h3>
+                <p id="expense">$0.00</p>
+            </div>
+        </div>
+
+        <!-- PHASE 5: Budget management -->
+        <div class="card-section">
+            <h3>Monthly Budget</h3>
+            <div class="budget-set-row">
+                <input type="text" id="budgetInput" placeholder="Set monthly budget e.g. 20000">
+                <button class="btn" id="setBudgetBtn">Save</button>
+            </div>
+            <div class="budget-stats">
+                <div>
+                    <span class="label">Budget</span>
+                    <span id="budgetDisplay">$0.00</span>
+                </div>
+                <div>
+                    <span class="label">Remaining</span>
+                    <span id="budgetRemaining">$0.00</span>
+                </div>
+            </div>
+            <div id="budgetAlert" class="budget-alert budget-alert-neutral"></div>
+        </div>
+
+        <!-- PHASE 3: Monthly / Weekly / Yearly / Total Savings summary -->
+        <div class="card-section">
+            <h3>Summary</h3>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h4>This Week</h4>
+                    <p>Income: <span id="weeklyIncome">$0.00</span></p>
+                    <p>Expense: <span id="weeklyExpense">$0.00</span></p>
+                    <p>Net: <span id="weeklyNet">$0.00</span></p>
+                </div>
+                <div class="summary-card">
+                    <h4>This Month</h4>
+                    <p>Income: <span id="monthlyIncome">$0.00</span></p>
+                    <p>Expense: <span id="monthlyExpense">$0.00</span></p>
+                    <p>Net: <span id="monthlyNet">$0.00</span></p>
+                </div>
+                <div class="summary-card">
+                    <h4>This Year</h4>
+                    <p>Income: <span id="yearlyIncome">$0.00</span></p>
+                    <p>Expense: <span id="yearlyExpense">$0.00</span></p>
+                    <p>Net: <span id="yearlyNet">$0.00</span></p>
+                </div>
+                <div class="summary-card">
+                    <h4>Total Savings</h4>
+                    <p class="total-savings-value" id="totalSavings">$0.00</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PHASE 3: Charts -->
+        <div class="card-section">
+            <h3>Reports</h3>
+            <div class="charts-grid">
+                <div class="chart-box">
+                    <p class="chart-title">Expenses by Category</p>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <p class="chart-title">Monthly Comparison (last 6 months)</p>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <p class="chart-title">Balance Trend</p>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="lineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PHASE 3: Recent transactions -->
+        <div class="card-section">
+            <h3>Recent Transactions</h3>
+            <ul id="recentList" class="recent-list"></ul>
+        </div>
+
+        <!-- PHASE 8: Savings Goals -->
+        <div class="card-section">
+            <h3>Savings Goals</h3>
+            <div id="goalsList" class="goals-list"></div>
+            <div class="goal-add-row">
+                <input type="text" id="goalName" placeholder="Goal name e.g. New Laptop">
+                <input type="text" id="goalTarget" placeholder="Target amount">
+                <button class="btn" id="addGoalBtn">Add Goal</button>
+            </div>
+        </div>
+
+        <div class="form">
+            <h3>Add Transaction</h3>
+            <div class="form-control">
+                <label for="text">Description</label>
+                <input type="text" id="text" placeholder="Enter description">
+            </div>
+            <div class="form-control">
+                <label for="amount">Amount <small>(negative - expense, positive - income)</small></label>
+                <input type="text" id="amount" placeholder="Enter amount">
+            </div>
+            <div class="form-control">
+                <label for="category">Category</label>
+                <select id="category">
+                    <option value="Salary">Salary</option>
+                    <option value="Food">Food</option>
+                    <option value="Transport">Transport</option>
+                    <option value="Rent">Rent</option>
+                    <option value="Utilities">Utilities</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Health">Health</option>
+                    <option value="Other" selected>Other</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label for="transactionDate">Date</label>
+                <input type="date" id="transactionDate">
+            </div>
+            <!-- PHASE 8: Recurring expense controls -->
+            <div class="form-control form-control-inline">
+                <label for="recurringCheckbox"><input type="checkbox" id="recurringCheckbox"> Repeat this transaction</label>
+                <select id="recurrenceInterval" disabled>
+                    <option value="WEEKLY">Weekly</option>
+                    <option value="MONTHLY" selected>Monthly</option>
+                </select>
+            </div>
+            <button class="btn" id="add-transaction">Add Transaction</button>
+        </div>
+
+        <!-- PHASE 4: Search, filter, sort -->
+        <div class="card-section">
+            <h3>Search &amp; Filter</h3>
+            <div class="filter-row">
+                <input type="text" id="searchInput" placeholder="Search description...">
+                <select id="categoryFilter">
+                    <option value="All">All Categories</option>
+                    <option value="Salary">Salary</option>
+                    <option value="Food">Food</option>
+                    <option value="Transport">Transport</option>
+                    <option value="Rent">Rent</option>
+                    <option value="Utilities">Utilities</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Health">Health</option>
+                    <option value="Other">Other</option>
+                </select>
+                <select id="sortSelect">
+                    <option value="date-desc">Date: Newest first</option>
+                    <option value="date-asc">Date: Oldest first</option>
+                    <option value="amount-desc">Amount: High to low</option>
+                    <option value="amount-asc">Amount: Low to high</option>
+                </select>
+            </div>
+            <div class="filter-row">
+                <label class="date-range-label">From <input type="date" id="dateFrom"></label>
+                <label class="date-range-label">To <input type="date" id="dateTo"></label>
+                <button class="btn btn-secondary" id="clearFiltersBtn">Clear Filters</button>
+            </div>
+        </div>
+
+        <!-- PHASE 7: Export -->
+        <div class="card-section">
+            <h3>Export</h3>
+            <p class="export-note">Exports the transactions currently shown below (respects your search/filter/sort above).</p>
+            <div class="export-row">
+                <button class="btn btn-secondary" id="exportCsvBtn">Export CSV</button>
+                <button class="btn btn-secondary" id="exportExcelBtn">Export Excel</button>
+                <button class="btn btn-secondary" id="exportPdfBtn">Export PDF</button>
+            </div>
+        </div>
+
+        <div class="history">
+            <h3>Transaction History</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="list"></tbody>
+            </table>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
